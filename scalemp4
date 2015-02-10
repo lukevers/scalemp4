@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+[[ ! $(type -P ffmpeg) ]] && echo 'Error: The ffmpeg executable was not found in $PATH' && exit 1
+
+function scale_mp4(){
+	# Figure out number of cores
+	if [ "$(uname)" == "Darwin" ]; then
+		let CORES="$(sysctl -n hw.ncpu)"
+	elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+		let CORES="$(nproc)"
+	else
+		let CORES=1
+	fi
+
+	# New extension
+	NEW_EXT="-scaled.mp4"
+
+	# Convert video
+	ffmpeg -i "$1" -s "$SCALE" -c:a copy -threads $CORES "${1/\.${OLD_EXT}}${NEW_EXT}"
+
+}
+
+if [ -n "$1" ]; then
+	SIZE="$1"
+	shift
+else
+	echo "Error: the size of the resulting video must be passed as the first argument"
+	exit 1
+fi
+
+if [ -n "$1" ]; then
+	for video in "$@"; do
+		if [[ -f "$video" ]]; then
+			scale_mp4 "$video"
+		else
+			echo "Error: no video file(s) matching '$video'"
+		fi
+	done
+else
+	for video in *.mp4; do
+		scale_mp4 "$video"
+	done
+fi
