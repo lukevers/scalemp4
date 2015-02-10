@@ -17,11 +17,10 @@ function scale_mp4(){
 
 	# Convert video
 	ffmpeg -i "$1" -s "$SCALE" -c:a copy -threads $CORES "${1/\.${OLD_EXT}}${NEW_EXT}"
-
 }
 
 if [ -n "$1" ]; then
-	SIZE="$1"
+	SCALE="$1"
 	shift
 else
 	echo "Error: the size of the resulting video must be passed as the first argument"
